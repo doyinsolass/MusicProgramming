@@ -1,4 +1,4 @@
----
+
 
 ## Python Programming Basics
 
@@ -49,5 +49,6 @@
 - [Introduction to Music Theory (musictheory.net)](https://www.musictheory.net/lessons)
 
 ---
+
 
 
