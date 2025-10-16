@@ -1,7 +1,3 @@
-# Music Programming Assignment – Learning Resources
-
-This document contains links to resources that will help you understand and implement every feature in your `music.py` program, including Python basics, menu-driven programs, and music/audio programming (ABC notation, waveforms, audio processing).
-
 ---
 
 ## Python Programming Basics
@@ -54,4 +50,4 @@ This document contains links to resources that will help you understand and impl
 
 ---
 
-Use these resources to learn how to implement each menu option and expand your music programming project!
+
