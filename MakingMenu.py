@@ -1,6 +1,7 @@
 import os
 from pickle import TRUE
 import sys
+import subprocess
 
 
 
@@ -73,8 +74,41 @@ def loudness():                  #Ai helped me with using global variable and un
             
 
 def ABC_file_path():
+    global abc_file_path
     cls()
+    abc_file_path = input("Paste the path of your ABC file here: ")
+    if abc_file_path == '':
+        print("This action has been cancelled. Press enter  to go back to the main menu.")
+        input("Press enter to continue.")
+        return
+    
+    path = os.path.expanduser(abc_file_path)
+    if not os.path.exists(path):
+        print("File was not found. Check your path and try again")
+        input("Press Enter to continue.")
+        return
+    
+    abc_file_path = path
+    print(f"ABC path has been successfully set to: {abc_file_path}")
 
+
+def pitch_shift():
+    cls()
+    print("You selected Shift Pitch")
+    
+    try:
+        shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
+        sound = AudioSegment.from_file(abc_file_path)
+        new_sound_rate = int(sound.frame.rate * (2.0 ** (shift_value / 12.00)))
+        new_sound = sound._spawn(sound.raw_data, overrides={'frame rate': new_sound_rate})
+        new_sound = new_sound_rate.set_frame_rate(sound.frame.rate)
+        new_sound.export("new_pitch_output.abc", format="abc")
+        print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as 'new_pitch_output.abc'.")
+        input("Press Enter to continue.")
+    except ValueError:
+        cls()
+        print("Your input was invalid. Please enter a valid number for semitones.")
+        input("Press Enter to continue.")
 
                 
 
@@ -97,8 +131,8 @@ if __name__ == "__main__":
                 select_waveform()
             case '2':
                 loudness()
-            # case '3':
-            #     option3()
+            case '3':
+                ABC_file_path()
             # case '4':
             #     option4()
             # case '5':
