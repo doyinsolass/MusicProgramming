@@ -2,6 +2,8 @@ import os
 from pickle import TRUE
 import sys
 import subprocess
+import subprocess 
+from pydub import AudioSegment
 
 
 
@@ -95,20 +97,79 @@ def ABC_file_path():
 def pitch_shift():
     cls()
     print("You selected Shift Pitch")
+    global abc_file_path
+
+    if not abc_file_path:
+        print("ABC file path has not been set. Please set the ABC file path first.")
+        input ("Press Enter to go back to the main menu")
+        return
     
-    try:
-        shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
-        sound = AudioSegment.from_file(abc_file_path)
-        new_sound_rate = int(sound.frame.rate * (2.0 ** (shift_value / 12.00)))
-        new_sound = sound._spawn(sound.raw_data, overrides={'frame rate': new_sound_rate})
-        new_sound = new_sound_rate.set_frame_rate(sound.frame.rate)
-        new_sound.export("new_pitch_output.abc", format="abc")
-        print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as 'new_pitch_output.abc'.")
-        input("Press Enter to continue.")
-    except ValueError:
+    if not os.path.exists(abc_file_path):
+        print("The specified ABC file path does not exist. Please check the path and try again.")
+        input("Press Enter to return to the main menu.")
+        return
+    
+    while True:
+        userInput = input("Enter the number of semitones to shift (either positive or negative), or press Enter to cancel: ")
+        if(userInput == ''):
+            cls()
+            print("Pitch shift cancelled. Press Enter to return to the main menu.")
+            input()    
+            return
+        try:
+            shift_value = int (userInput)
+        except ValueError:
+            cls()
+            print("Invalid input. Please enter a valid number for semitones.")
+            input("Try again. Press Enter to continue.")
+            continue
+
+        if abs(shift_value) > 48:
+            cls()
+            print("Shift value for semitones is out of range. Please enter a vlue between -48 and 48.")
+            input("Press Enter to try again.")
+            continue
+
+        try:
+            sound = AudioSegment.from_file(abc_file_path)
+        except Exception as e:
+            cls()
+            print(f"File could not load {e}")
+            input("Press Enter to continue.")
+            return
+        
+        original_sound_rate = sound.frame_rate
+        new_sound_rate = int(original_sound_rate * (2.0 ** (shift_value)/ 12.0))
+        new_sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sound_rate})
+        new_sound = new_sound.set_frame_rate(original_sound_rate)
+
+        out_path = os.path.join(os.path.dirname(abc_file_path), "new_pitch_output.wav")
+        try:
+            new_sound.export(out_path, format="wav")
+        except Exception as e:
+            cls()
+            print(f"File could not be exported: {e}")
+            input("Press Enter to continue.")
+            return
+        
         cls()
-        print("Your input was invalid. Please enter a valid number for semitones.")
+        print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as '{out_path}'.")
         input("Press Enter to continue.")
+        return
+    
+    # try:
+    #     shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
+    #     sound = AudioSegment.from_file(abc_file_path)
+    #     new_sound_rate = int(sound.frame.rate * (2.0 ** (shift_value / 12.00)))
+    #     new_sound = sound._spawn(sound.raw_data, overrides={'frame rate': new_sound_rate})
+    #     new_sound = new_sound_rate.set_frame_rate(sound.frame.rate)
+    #     new_sound.export("new_pitch_output.abc", format="abc")
+    #     print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as 'new_pitch_output.abc'.")
+    #     input("Press Enter to continue.")
+    # except ValueError:
+    #     cls()
+    #     print("Your input was invalid. Please enter a valid number for semitones.")
+    #     input("Press Enter to continue.")
 
                 
 
@@ -133,8 +194,8 @@ if __name__ == "__main__":
                 loudness()
             case '3':
                 ABC_file_path()
-            # case '4':
-            #     option4()
+            case '4':
+                pitch_shift()
             # case '5':
             #     option5()            
             # case '6':
