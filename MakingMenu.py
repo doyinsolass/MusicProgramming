@@ -2,7 +2,8 @@ import os
 from pickle import TRUE
 import sys
 import subprocess
-import subprocess 
+import subprocess
+import pygame
 from pydub import AudioSegment
 
 
@@ -45,6 +46,8 @@ def select_waveform():
             input()
             
 current_loudness = 50
+abc_file_path = ""
+
 
 def loudness():                  #Ai helped me with using global variable and understanding how to implement try and except block
     cls()
@@ -156,6 +159,16 @@ def pitch_shift():
         print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as '{out_path}'.")
         input("Press Enter to continue.")
         return
+
+def playMusic():
+    cls()
+    pygame.init()
+    pygame.mixer.init()
+    pygame.mixer.music.load(abc_file_path)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10)
+    
     
     # try:
     #     shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
@@ -281,6 +294,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
