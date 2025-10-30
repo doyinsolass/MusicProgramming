@@ -50,7 +50,7 @@ def select_waveform():
             input()
             
 current_loudness = 50
-abc_file_path = ""
+abc_file_path = "" #Incomplete path to ABC file
 
 
 def loudness():                  #Ai helped me with using global variable and understanding how to implement try and except block
