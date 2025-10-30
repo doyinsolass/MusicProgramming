@@ -3,7 +3,11 @@ from pickle import TRUE
 import sys
 import subprocess
 import subprocess 
-from pydub import AudioSegment
+import pyaudio
+import wave
+
+
+
 
 
 
@@ -14,6 +18,7 @@ def cls():
 # userInput = input("Select the number between 1 and for your choice of settings:")
 # cls()
 
+
 def select_waveform():
     cls()
     print("1) Sine wave")
@@ -21,12 +26,16 @@ def select_waveform():
     print("3) Triangle wave")
     print("4) Sawtooth wave")
 
+
+
     inputText = input("Please select a number between 1 and 4: ")
     match inputText:
         case '1':
             cls()
             print("You selected Sine wave")
             input()
+
+            
         case '2':
             cls()
             print("You selected Square wave")
@@ -92,6 +101,7 @@ def ABC_file_path():
     
     abc_file_path = path
     print(f"ABC path has been successfully set to: {abc_file_path}")
+    input("Press Enter to continue.")
 
 
 def pitch_shift():
@@ -131,7 +141,7 @@ def pitch_shift():
             continue
 
         try:
-            sound = AudioSegment.from_file(abc_file_path)
+            sound = pyaudio.from_file(abc_file_path)
         except Exception as e:
             cls()
             print(f"File could not load {e}")
@@ -156,6 +166,110 @@ def pitch_shift():
         print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as '{out_path}'.")
         input("Press Enter to continue.")
         return
+    
+def speed_change():
+    cls()
+    print("You have selected to change the speed (BPM) of the music")
+    global abc_file_path
+
+    while True:
+        userInput = input("Enter the desired speed in BPM (Beats Per Minute), you want to set")
+
+        if(userInput == ''):
+            cls()
+            print("Speed change cancelled. Press Enter to return to the main menu.")
+            input()
+            return
+        try:
+            bpm_value = int(userInput)
+        except ValueError:
+            cls()
+            print("Invalid input. Please enter a valid number for BPM: ")
+            input()
+            continue
+        if bpm_value <=0:
+            cls()
+            print("BPM must be a positive number. Please try again: ")
+            input()
+            continue
+        elif bpm_value < 20 or bpm_value > 250:
+            cls()
+            print("BPM value is out of range. Please enter a value between 20 and 250.")
+            input()
+            continue
+        
+        original_bpm = os.path.basename(abc_file_path)
+
+
+
+
+def play_file():
+    cls()
+    print("You have selected to play the file")
+    global abc_file_path
+
+    if not abc_file_path:
+        print("ABC file path has not been set. Please set the ABC file path first.")
+        input ("Press Enter to go back to the main menu")
+        return
+    elif not os.path.exists(abc_file_path):
+        print("The specified ABC file path does not exist. Please check the path and try again.")
+        input("Press Enter to return to the main menu.")
+        return
+    #Sample code from lecture notes on how to play wav files using pyaudio
+    CHUNK = 2048
+
+    p = pyaudio.PyAudio()
+    wf = wave.open(abc_file_path, 'rb')
+
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth())
+                    , channels=wf.getnchannels()
+                    , rate=wf.getframerate()
+                    , output=True)
+    data = wf.readframes(CHUNK)
+
+    while len(data):
+        stream.write(data)
+        data = wf.readframes(CHUNK)
+
+    stream.stop_stream()
+    stream.close()
+
+    p.terminate()
+
+    
+   
+
+        
+        # try:
+        #     sound = pyaudio.from_file(abc_file_path)
+        
+    
+    
+
+
+        
+        
+        # try:
+        #     sound = AudioSegment.from_file(abc_file_path)
+        #     speed_change_factor = bpm_value / original_bpm  # Assuming original_bpm is defined elsewhere
+        #     new_sound = sound._spawn(sound.raw_data, overrides={
+        #         "frame_rate": int(sound.frame_rate * speed_change_factor)
+        #     })
+        #     new_sound = new_sound.set_frame_rate(sound.frame_rate)
+        #     out_path = os.path.join(os.path.dirname(abc_file_path), "new_speed_output.wav")
+        #     new_sound.export(out_path, format="wav")
+        #     print(f"The speed has been changed to {bpm_value} BPM. Your new audio has been saved as '{out_path}'.")
+        #     input("Press Enter to continue.")
+        # except Exception as e:
+        #     cls()
+        #     print(f"An error occurred while processing the file: {e}")
+        #     input("Press Enter to continue.")
+        #     return
+
+        
+            
+    
     
     # try:
     #     shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
@@ -195,11 +309,19 @@ if __name__ == "__main__":
             case '3':
                 ABC_file_path()
             case '4':
-                pitch_shift()
-            # case '5':
-            #     option5()            
+                speed_change()
+            case '5':
+                pitch_shift()            
             # case '6':
-            #     option6()            
+            #     option6()
+            # case '7':
+            #    option7()
+            case '8':
+              play_file()
+            case '9':
+              ABC_file_path()
+            # case '10':
+            #   option10()            
             case _:
                 cls()
                 print("The input value is not valid. Please try again.")
