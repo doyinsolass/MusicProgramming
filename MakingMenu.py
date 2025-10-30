@@ -9,8 +9,6 @@ import wave
 
 
 
-
-
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
@@ -33,9 +31,7 @@ def select_waveform():
         case '1':
             cls()
             print("You selected Sine wave")
-            input()
-
-            
+            input()            
         case '2':
             cls()
             print("You selected Square wave")
@@ -54,6 +50,8 @@ def select_waveform():
             input()
             
 current_loudness = 50
+abc_file_path = ""
+
 
 def loudness():                  #Ai helped me with using global variable and understanding how to implement try and except block
     cls()
@@ -64,7 +62,6 @@ def loudness():                  #Ai helped me with using global variable and un
             cls()
             print("Input unchanged. Press enter to return to main menu")
             return
-        
         try:
             value = int(userInput)
         except ValueError:
@@ -201,8 +198,6 @@ def speed_change():
         original_bpm = os.path.basename(abc_file_path)
 
 
-
-
 def play_file():
     cls()
     print("You have selected to play the file")
@@ -322,10 +317,7 @@ if __name__ == "__main__":
               ABC_file_path()
             # case '10':
             #   option10()            
-            case _:
-                cls()
-                print("The input value is not valid. Please try again.")
-                input()
+          
 
 # if userInput == '1':
 #     print("You selected 1 for Selecting waveform type")
@@ -403,6 +395,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
