@@ -5,6 +5,9 @@ import subprocess
 import subprocess 
 import pyaudio
 import wave
+import numpy as np
+import sounddevice as sd
+from music21 import converter
 
 
 
@@ -17,37 +20,76 @@ def cls():
 # cls()
 
 
+def play_waveform(waveform, sample_rate):
+    sd.play(waveform, samplerate=sample_rate)
+    sd.wait
+
+
+def generate_sine_wave(frequency, sample_rate):
+    duration = 2.0  # this is set to 2 seconds
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    wave = 0.5 * np.sin(2 * np.pi * frequency * t)  # Amplitude scaled to 0.5
+    return wave
+
+def generate_square_wave(frequency, sample_rate):
+    duration = 2.0
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    wave = 0.5 * np.sign(np.sin(2 * np.pi * frequency * t))
+    return wave
+
+def generate_triangle_wave(frequency, sample_rate):
+    duration = 2.0
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    wave = 0.5 * (2 * np.abs(2 * (t * frequency - np.floor(t * frequency + 0.5))) - 1)
+    return wave
+
+def generate_sawtooth_wave(frequency, sample_rate): 
+    duration = 2.0
+    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    wave = 0.5 * (2 * (t * frequency - np.floor(t * frequency + 0.5)))
+    return wave
+
 def select_waveform():
-    cls()
-    print("1) Sine wave")
-    print("2) Square wave")
-    print("3) Triangle wave")
-    print("4) Sawtooth wave")
+    
+    f = 440 #This is the frequency ( In hertz Hz)
+    sr = 44100 #This is the sample rate (In samples per second)
+    
+    while True:
+        cls()
+        print("Select your type of waveform")
+        print("1) Sine wave")
+        print("2) Square wave")
+        print("3) Triangle wave")
+        print("4) Sawtooth wave")
+        inputText = input("Please select a number between 1 and 4: ")
+        match inputText:
+            case '1':
+                cls()
+                wave = generate_sine_wave(f, sr)
+                play_waveform(wave, sr) 
+                return wave           
+            case '2':
+                cls()
+                wave = generate_square_wave(f, sr)
+                play_waveform(wave, sr)
+                return wave
+            
+            case '3':
+                cls()
+                wave =  generate_triangle_wave(f, sr)
+                play_waveform(wave, sr)
+                return wave
+            case '4':
+                cls()
+                wave = generate_sawtooth_wave(f, sr)
+                play_waveform(wave, sr)  
+                return wave         
+            case _:
+                cls()
+                print("The input value is NOT valid. Please try again.")
+                input()
+                continue
 
-
-
-    inputText = input("Please select a number between 1 and 4: ")
-    match inputText:
-        case '1':
-            cls()
-            print("You selected Sine wave")
-            input()            
-        case '2':
-            cls()
-            print("You selected Square wave")
-            input()
-        case '3':
-            cls()
-            print("You selected Triangle wave")
-            input()
-        case '4':
-            cls()
-            print("You selected Sawtooth wave")
-            input()            
-        case _:
-            cls()
-            print("The input value is not valid. Please try again.")
-            input()
             
 current_loudness = 50
 abc_file_path = "" #Incomplete path to ABC file
@@ -403,6 +445,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
