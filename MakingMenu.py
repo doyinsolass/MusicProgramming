@@ -279,7 +279,13 @@ def play_file():
     #     cls()
     #     print("Your input was invalid. Please enter a valid number for semitones.")
     #     input("Press Enter to continue.")
-
+def MIDIconv():
+    global abc_file_path
+    os.system('cls' if os.name=='nt' else 'clear')  
+    print("You have chosen to convert ABC to MIDI file")
+    input("Press Enter to continue...")
+    score = converter.parse(abc_file_path)
+    score.show('midi')
                 
 
 if __name__ == "__main__":
@@ -315,6 +321,8 @@ if __name__ == "__main__":
               play_file()
             case '9':
               ABC_file_path()
+            case '11':
+              MIDIconv()
             # case '10':
             #   option10()            
           
@@ -395,6 +403,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
