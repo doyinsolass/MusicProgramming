@@ -334,7 +334,7 @@ def backgroundNoise():
     print("You selected Add Background Noise")
     input("Press Enter to continue...")
 
-    print("\nChoose noise type: white, pink, or brown")
+    print("\nChoose a noise type. 'white', 'pink', or 'brown'")    
     noise_type = input("Enter your choice: ").strip().lower()
 
     duration = 2
@@ -479,6 +479,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
