@@ -328,6 +328,40 @@ def MIDIconv():
     input("Press Enter to continue...")
     score = converter.parse(abc_file_path)
     score.show('midi')
+
+def backgroundNoise():
+    cls()
+    print("You selected Add Background Noise")
+    input("Press Enter to continue...")
+
+    print("\nChoose noise type: white, pink, or brown")
+    noise_type = input("Enter your choice: ").strip().lower()
+
+    duration = 2
+    sample_rate = 44100
+    amplitude = 0.5
+    N = int(duration * sample_rate)
+    f = np.fft.rfftfreq(N)
+
+    if noise_type == 'white':
+        noise = np.random.normal(0, 1, N)
+    else:
+        X_white = np.fft.rfft(np.random.randn(N))
+        if noise_type == 'pink':
+            S = 1 / np.where(f == 0, float('inf'), np.sqrt(f))
+        elif noise_type == 'brown':
+            S = 1 / np.where(f == 0, float('inf'), f)
+        else:
+            print("Invalid noise type. Defaulting to white noise.")
+            noise = np.random.normal(0, 1, N)
+            S = None
+        if S is not None:
+            S /= np.sqrt(np.mean(S**2))
+            noise = np.fft.irfft(X_white * S)
+
+    noise = (noise * amplitude).astype(np.float32)
+    sd.play(noise, samplerate=sample_rate)
+    sd.wait()
                 
 
 if __name__ == "__main__":
@@ -355,8 +389,8 @@ if __name__ == "__main__":
                 speed_change()
             case '5':
                 pitch_shift()            
-            # case '6':
-            #     option6()
+            case '6':
+                backgroundNoise()
             # case '7':
             #    option7()
             case '8':
@@ -445,6 +479,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
