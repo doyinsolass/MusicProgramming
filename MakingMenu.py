@@ -103,6 +103,34 @@ def select_waveform():
                 input()
                 continue
 
+#  Loads file_path with pydub, applies gain for loudness_percent (0-100) and     
+#  writes a new WAV file next to the original. Returns output path or none on error
+def apply_loudness_to_file(abc_file_path: str, loudness_percent: int) -> str | None:
+    try:
+        if not os.path.exists(abc_file_path):
+            print("File not found.")
+            return None
+        # load file (pydub autodetects format)
+        audio = AudioSegment.from_file(abc_file_path)
+        # Used Ai to help me with the math calculations for converting linear gain to dB
+        # compute gain in dB: target gain relative to original is loudness_percent/100
+        # convert linear gain to dB: 20 * log10(gain). handle 0 -> very quiet (-120 dB)
+        if loudness_percent <= 0:
+            gain_db = -120.0
+        else:
+            gain_linear = loudness_percent / 100.0
+            gain_db = 20.0 * math.log10(gain_linear)
+        new_audio = audio.apply_gain(gain_db)
+        base, ext = os.path.splitext(abc_file_path)
+        out_path = f"{base}_loudness_{loudness_percent}.wav"
+        new_audio.export(out_path, format="wav")
+        return out_path
+    except Exception as e:
+        cls()
+        print(f"Error applying loudness: {e}")
+        input("Press Enter to continue.")
+        return None
+
 
 def loudness():                  #Ai helped me with using global variable and understanding how to implement try and except block
     cls()
@@ -142,39 +170,8 @@ def loudness():                  #Ai helped me with using global variable and un
             print("The value must be between 0 and 100. Please try again")
             input("Press enter to try again.")
 
-#  Loads file_path with pydub, applies gain for loudness_percent (0-100) and     
-#  writes a new WAV file next to the original. Returns output path or none on error
-def apply_loudness_to_file(abc_file_path: str, loudness_percent: int) -> str | None:
-    try:
-        if not os.path.exists(abc_file_path):
-            print("File not found.")
-            return None
-        # load file (pydub autodetects format)
-        audio = AudioSegment.from_file(abc_file_path)
-        # Used Ai to help me with the math calculations for converting linear gain to dB
-        # compute gain in dB: target gain relative to original is loudness_percent/100
-        # convert linear gain to dB: 20 * log10(gain). handle 0 -> very quiet (-120 dB)
-        if loudness_percent <= 0:
-            gain_db = -120.0
-        else:
-            gain_linear = loudness_percent / 100.0
-            gain_db = 20.0 * math.log10(gain_linear)
-        new_audio = audio.apply_gain(gain_db)
-        base, ext = os.path.splitext(abc_file_path)
-        out_path = f"{base}_loudness_{loudness_percent}.wav"
-        new_audio.export(out_path, format="wav")
-        return out_path
-    except Exception as e:
-        cls()
-        print(f"Error applying loudness: {e}")
-        input("Press Enter to continue.")
-        return None
 
-    
-
-       
             
-
 def ABC_file_path():
     global abc_file_path
     cls()
@@ -194,11 +191,32 @@ def ABC_file_path():
     print(f"ABC path has been successfully set to: {abc_file_path}")
     input("Press Enter to continue.")
 
+# helper: apply pitch shift using pydub (frame-rate trick)
+def apply_pitch_shift_to_file(abc_file_path: str, semitones: int) -> str | None:
+    try:
+        if not os.path.exists(abc_file_path):
+            print("File not found.")
+            return None
+        audio = AudioSegment.from_file(abc_file_path)
+        # compute new frame rate for pitch shift
+        new_rate = int(audio.frame_rate * (2.0 ** (semitones / 12.0)))
+        pitched = audio._spawn(audio.raw_data, overrides={'frame_rate': new_rate})
+        # resample metadata back to original frame rate so file reports original sample rate
+        pitched = pitched.set_frame_rate(audio.frame_rate)
+        base, _ = os.path.splitext(abc_file_path)
+        out_path = f"{base}_pitch_{semitones:+d}.wav"
+        pitched.export(out_path, format="wav")
+        return out_path
+    except Exception as e:
+        cls()
+        print(f"Error applying pitch shift: {e}")
+        input("Press Enter to continue.")
+        return None    
 
 def pitch_shift():
     cls()
     print("You selected Shift Pitch")
-    global abc_file_path
+    global abc_file_path, current_pitch_shift
 
     if not abc_file_path:
         print("ABC file path has not been set. Please set the ABC file path first.")
@@ -212,13 +230,13 @@ def pitch_shift():
     
     while True:
         userInput = input("Enter the number of semitones to shift (either positive or negative), or press Enter to cancel: ")
-        if(userInput == ''):
+        if userInput == '':
             cls()
             print("Pitch shift cancelled. Press Enter to return to the main menu.")
             input()    
             return
         try:
-            shift_value = int (userInput)
+            shift_value = int(userInput)
         except ValueError:
             cls()
             print("Invalid input. Please enter a valid number for semitones.")
@@ -227,71 +245,96 @@ def pitch_shift():
 
         if abs(shift_value) > 48:
             cls()
-            print("Shift value for semitones is out of range. Please enter a vlue between -48 and 48.")
+            print("Shift value for semitones is out of range. Please enter a value between -48 and 48.")
             input("Press Enter to try again.")
             continue
 
-        try:
-            sound = pyaudio.from_file(abc_file_path)
-        except Exception as e:
-            cls()
-            print(f"File could not load {e}")
-            input("Press Enter to continue.")
-            return
-        
-        original_sound_rate = sound.frame_rate
-        new_sound_rate = int(original_sound_rate * (2.0 ** (shift_value)/ 12.0))
-        new_sound = sound._spawn(sound.raw_data, overrides={'frame_rate': new_sound_rate})
-        new_sound = new_sound.set_frame_rate(original_sound_rate)
-
-        out_path = os.path.join(os.path.dirname(abc_file_path), "new_pitch_output.wav")
-        try:
-            new_sound.export(out_path, format="wav")
-        except Exception as e:
-            cls()
-            print(f"File could not be exported: {e}")
-            input("Press Enter to continue.")
-            return
-        
+        current_pitch_shift = shift_value
         cls()
-        print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as '{out_path}'.")
+        print(f"Pitch shift set to {current_pitch_shift} semitone(s).")
+        apply_now = input("Apply pitch shift to the current file and save a new WAV? (y/n): ").strip().lower()
+        if apply_now == 'y':
+            out = apply_pitch_shift_to_file(abc_file_path, current_pitch_shift)
+            if out:
+                print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as '{out}'.")
+            else:
+                print("Failed to apply pitch shift.")
         input("Press Enter to continue.")
         return
+    
+def apply_speed_change_to_file(abc_file_path: str, speed_percent: int) -> str | None:
+    try:
+        if not os.path.exists(abc_file_path):
+            print("File not found.")
+            return None
+        audio = AudioSegment.from_file(abc_file_path)
+        factor = speed_percent / 100.0
+        if factor <= 0:
+            print("Invalid speed factor.")
+            return None
+        new_rate = int(audio.frame_rate * factor)
+        sped = audio._spawn(audio.raw_data, overrides={'frame_rate': new_rate})
+        base, _ = os.path.splitext(abc_file_path)
+        out_path = f"{base}_speed_{speed_percent}.wav"
+        # export uses the sped frame rate (playback will be faster/slower)
+        sped.export(out_path, format="wav")
+        return out_path
+    except Exception as e:
+        cls()
+        print(f"Error applying speed change: {e}")
+        input("Press Enter to continue.")
+        return None
+        # ...existing code...
+        # helper: apply pitch shift using pydub (frame-rate trick)
     
 def speed_change():
     cls()
     print("You have selected to change the speed (BPM) of the music")
-    global abc_file_path
+    global abc_file_path, current_speed_percent
+
+    if not abc_file_path:
+        print("ABC file path has not been set. Please set the ABC file path first.")
+        input ("Press Enter to go back to the main menu")
+        return
+
+    if not os.path.exists(abc_file_path):
+        print("The specified ABC file path does not exist. Please check the path and try again.")
+        input("Press Enter to return to the main menu.")
+        return
 
     while True:
-        userInput = input("Enter the desired speed in BPM (Beats Per Minute), you want to set")
-
-        if(userInput == ''):
+        userInput = input("Enter desired speed as percent (e.g. 100 = original, 150 = 1.5x, 50 = 0.5x), or press Enter to cancel: ")
+        if userInput == '':
             cls()
             print("Speed change cancelled. Press Enter to return to the main menu.")
             input()
             return
         try:
-            bpm_value = int(userInput)
+            speed_value = int(userInput)
         except ValueError:
             cls()
-            print("Invalid input. Please enter a valid number for BPM: ")
+            print("Invalid input. Please enter an integer percent value.")
             input()
             continue
-        if bpm_value <=0:
+        if speed_value <= 0 or speed_value > 1000:
             cls()
-            print("BPM must be a positive number. Please try again: ")
+            print("Speed percent out of range. Enter a value between 1 and 1000.")
             input()
             continue
-        elif bpm_value < 20 or bpm_value > 250:
-            cls()
-            print("BPM value is out of range. Please enter a value between 20 and 250.")
-            input()
-            continue
-        
-        original_bpm = os.path.basename(abc_file_path)
 
-
+        current_speed_percent = speed_value
+        cls()
+        print(f"Speed set to {current_speed_percent}% of original.")
+        apply_now = input("Apply speed change to the current file and save a new WAV? (y/n): ").strip().lower()
+        if apply_now == 'y':
+            out = apply_speed_change_to_file(abc_file_path, current_speed_percent)
+            if out:
+                print(f"Saved speed-changed file as: {out}")
+            else:
+                print("Failed to apply speed change.")
+        input("Press Enter to continue.")
+        return
+    
 def play_file():
     cls()
     print("You have selected to play the file")
