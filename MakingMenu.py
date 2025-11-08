@@ -8,6 +8,8 @@ import wave
 import numpy as np
 import sounddevice as sd
 from music21 import converter
+import math
+from pydub import AudioSegment
 
 
 
@@ -20,10 +22,21 @@ def cls():
 # cls()
 
 
+
+
 def play_waveform(waveform, sample_rate):
     sd.play(waveform, samplerate=sample_rate)
     sd.wait
+    # global current_loudness
 
+    # try:
+    #     gain = float(current_loudness) / 100.0
+    # except Exception:
+    #     gain = 1.0
+
+    # wf = (waveform * gain).astype(np.float32)
+    # sd.play(wf, samplerate=sample_rate)
+    # sd.wait()
 
 def generate_sine_wave(frequency, sample_rate):
     duration = 2.0  # this is set to 2 seconds
@@ -90,14 +103,11 @@ def select_waveform():
                 input()
                 continue
 
-            
-current_loudness = 50
-abc_file_path = "" #Incomplete path to ABC file
-
 
 def loudness():                  #Ai helped me with using global variable and understanding how to implement try and except block
     cls()
     global current_loudness    
+    global abc_file_path
     while True:
         userInput = input("Set loudness level between 0 and 100 :")
         if userInput == '':
@@ -110,17 +120,59 @@ def loudness():                  #Ai helped me with using global variable and un
             cls()
             print("Invalid input. Please enter a number between 0 and 100.")
             input()
+            continue
         
         if 0 <= value <=100:
             current_loudness = value
             cls()
             print(f"Loudness set to {current_loudness}")
+            # If a file is set, offer to apply and save immediately
+            if abc_file_path and os.path.exists(abc_file_path):
+                apply_now = input("Apply loudness to the current file and save a new WAV? (y/n): ").strip().lower()
+                if apply_now == 'y':
+                    out = apply_loudness_to_file(abc_file_path, current_loudness)
+                    if out:
+                        print(f"Saved loudness-changed file as: {out}")
+                    else:
+                        print("Failed to apply loudness to file.")
             input()
             break
         else:
             cls()
             print("The value must be between 0 and 100. Please try again")
             input("Press enter to try again.")
+
+#  Loads file_path with pydub, applies gain for loudness_percent (0-100) and     
+#  writes a new WAV file next to the original. Returns output path or None on error.
+def apply_loudness_to_file(abc_file_path: str, loudness_percent: int) -> str | None:
+    try:
+        if not os.path.exists(abc_file_path):
+            print("File not found.")
+            return None
+        # load file (pydub autodetects format)
+        audio = AudioSegment.from_file(abc_file_path)
+        # Used Ai to help me with the math calculations for converting linear gain to dB
+        # compute gain in dB: target gain relative to original is loudness_percent/100
+        # convert linear gain to dB: 20 * log10(gain). handle 0 -> very quiet (-120 dB)
+        if loudness_percent <= 0:
+            gain_db = -120.0
+        else:
+            gain_linear = loudness_percent / 100.0
+            gain_db = 20.0 * math.log10(gain_linear)
+        new_audio = audio.apply_gain(gain_db)
+        base, ext = os.path.splitext(abc_file_path)
+        out_path = f"{base}_loudness_{loudness_percent}.wav"
+        new_audio.export(out_path, format="wav")
+        return out_path
+    except Exception as e:
+        cls()
+        print(f"Error applying loudness: {e}")
+        input("Press Enter to continue.")
+        return None
+
+    
+
+       
             
 
 def ABC_file_path():
