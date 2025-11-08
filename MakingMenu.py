@@ -143,7 +143,7 @@ def loudness():                  #Ai helped me with using global variable and un
             input("Press enter to try again.")
 
 #  Loads file_path with pydub, applies gain for loudness_percent (0-100) and     
-#  writes a new WAV file next to the original. Returns output path or None on error.
+#  writes a new WAV file next to the original. Returns output path or none on error
 def apply_loudness_to_file(abc_file_path: str, loudness_percent: int) -> str | None:
     try:
         if not os.path.exists(abc_file_path):
