@@ -6,6 +6,7 @@ import subprocess
 import pyaudio
 import wave
 import numpy as np
+import shutil
 import sounddevice as sd
 from music21 import converter
 import math
@@ -27,16 +28,6 @@ def cls():
 def play_waveform(waveform, sample_rate):
     sd.play(waveform, samplerate=sample_rate)
     sd.wait
-    # global current_loudness
-
-    # try:
-    #     gain = float(current_loudness) / 100.0
-    # except Exception:
-    #     gain = 1.0
-
-    # wf = (waveform * gain).astype(np.float32)
-    # sd.play(wf, samplerate=sample_rate)
-    # sd.wait()
 
 def generate_sine_wave(frequency, sample_rate):
     duration = 2.0  # this is set to 2 seconds
@@ -458,6 +449,97 @@ def backgroundNoise():
     sd.play(noise, samplerate=sample_rate)
     sd.wait()
                 
+def convert_to_wav(src: str, dest: str | None = None) -> str | None:
+    """
+    Convert any audio file to WAV. Returns the path to the saved WAV on success,
+    or None on error.
+    - src: source file path (can include ~)
+    - dest: destination path (optional). If omitted, same folder/name with .wav added.
+    """
+    try:
+        src_path = os.path.expanduser(src)
+        if not os.path.exists(src_path):
+            print("Source file not found.")
+            return None
+
+        # determine destination
+        if dest:
+            out_path = os.path.expanduser(dest)
+            if not out_path.lower().endswith('.wav'):
+                out_path += '.wav'
+        else:
+            base, _ = os.path.splitext(src_path)
+            out_path = f"{base}.wav"
+
+        # if already WAV, copy to preserve data
+        if os.path.splitext(src_path)[1].lower() == '.wav':
+            shutil.copy2(src_path, out_path)
+            return out_path
+
+        # use pydub (ffmpeg) to load & export to WAV
+        audio = AudioSegment.from_file(src_path)
+        audio.export(out_path, format="wav")
+        return out_path
+
+    except Exception as e:
+        print(f"Error converting to WAV: {e}")
+        return None
+
+# #asks for source filepath
+# #asks for destination filename (press Enter to use same name + .wav)
+# def convert_to_wav():
+#     cls()
+#     src = input("Enter path to the file you want to convert: ").strip()
+#     if not src:
+#         print("Cancelled.")
+#         return
+#     dest = input("Enter destination path of file (press Enter to use same name with .wav): ").strip()
+#     if dest == "":
+#         dest = None
+#     out = convert_to_wav(src, dest)
+#     if out:
+#         print(f"Saved WAV: {out}")
+#     else:
+#         print("Conversion failed.")
+#     input("Press Enter to continue.")
+
+
+    #Convert whatver file is saved to a Wav file and saves in user specified location
+    #If the source is already WAV, a copy with suffix "_copy.wav" is created.
+def save_current_file_as_wav():
+    
+    global abc_file_path
+    cls()
+    if not abc_file_path:
+        print("ABC file path is not set. Use option 3 to set it first.")
+        input("Press Enter to continue.")
+        return
+
+    if not os.path.exists(abc_file_path):
+        print("The specified file does not exist. Check the path and try again.")
+        input("Press Enter to continue.")
+        return
+
+    src = abc_file_path
+    base, ext = os.path.splitext(src)
+
+    try:
+        if ext.lower() == '.wav':
+            out_path = f"{base}_copy.wav"
+            shutil.copy2(src, out_path)
+        else:
+            out_path = f"{base}.wav"
+            audio = AudioSegment.from_file(src)
+            audio.export(out_path, format="wav")
+
+        print(f"Saved WAV: {out_path}")
+        input("Press Enter to continue.")
+        return out_path
+    except Exception as e:
+        cls()
+        print(f"Error saving WAV: {e}")
+        input("Press Enter to continue.")
+        return None
 
 if __name__ == "__main__":
     while(TRUE):
@@ -489,13 +571,15 @@ if __name__ == "__main__":
             # case '7':
             #    option7()
             case '8':
-              play_file()
+                play_file()
             case '9':
-              ABC_file_path()
+                save_current_file_as_wav()
+            case '10':
+              print("Exiting program. Goodbye!")
+              sys.exit()
             case '11':
-              MIDIconv()
-            # case '10':
-            #   option10()            
+                MIDIconv()
+                    
           
 
 # if userInput == '1':
