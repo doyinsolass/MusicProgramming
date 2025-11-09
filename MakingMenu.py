@@ -471,6 +471,57 @@ def save_current_file_as_wav():
         input("Press Enter to continue.")
         return None
 
+def mixWAV():
+    cls()
+    print("You selected Mixing within external WAV file")
+    global abc_file_path
+
+    if not abc_file_path:
+        print("ABC file path has not been set. Please set the ABC file path first.")
+        input("Press Enter to go back to the main menu")
+        return
+    elif not os.path.exists(abc_file_path):
+        print("The specified ABC file path does not exist. Please check the path and try again.")
+        input("Press Enter to return to the main menu.")
+        return
+
+    external_wav_path = input("Enter the path of the external WAV file to mix with: ").strip()
+    if not os.path.exists(external_wav_path):
+        print("The specified external WAV file path does not exist. Please check the path and try again.")
+        input("Press Enter to return to the main menu.")
+        return
+
+    try:
+        # Load both WAV files
+        wavs = [wave.open(abc_file_path, 'rb'), wave.open(external_wav_path, 'rb')]
+        frames = [w.readframes(w.getnframes()) for w in wavs]
+        samples = [np.frombuffer(f, dtype='<i2').astype(np.float64) for f in frames]
+
+        # Mix the shortest length
+        n = min(map(len, samples))
+        mix = samples[0][:n] + samples[1][:n]
+
+        # Save the mixed output
+        out_path = os.path.join(os.path.dirname(abc_file_path), "mixed_output.wav")
+        mix_wav = wave.open(out_path, 'wb')
+        mix_wav.setparams(wavs[0].getparams())
+        mix_wav.writeframes(mix.astype('<i2').tobytes())
+        mix_wav.close()
+
+        # Cleanup
+        for w in wavs:
+            w.close()
+
+        cls()
+        print(f"The files have been mixed. Your new audio has been saved as '{out_path}'.")
+        input("Press Enter to continue.")
+
+    except Exception as e:
+        cls()
+        print(f"An error occurred while mixing the files: {e}")
+        input("Press Enter to continue.")
+        return
+
 if __name__ == "__main__":
     while(TRUE):
         cls()
@@ -498,8 +549,8 @@ if __name__ == "__main__":
                 pitch_shift()            
             case '6':
                 backgroundNoise()
-            # case '7':
-            #    option7()
+            case '7':
+                mixWAV()
             case '8':
                 play_file()
             case '9':
@@ -679,6 +730,7 @@ if __name__ == "__main__":
 #     yesNo = input("Are you sure you want to exit the program?(y=yes/n=no)")
 #     if yesNo=='y':
 #         sys.exit()
+
 
 
 
