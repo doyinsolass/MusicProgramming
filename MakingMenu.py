@@ -18,12 +18,6 @@ from pydub import AudioSegment
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
-# print("Welcome to the waveform generator program! Press enter to continue")
-# userInput = input("Select the number between 1 and for your choice of settings:")
-# cls()
-
-
-
 
 def play_waveform(waveform, sample_rate):
     sd.play(waveform, samplerate=sample_rate)
@@ -363,50 +357,6 @@ def play_file():
     
    
 
-        
-        # try:
-        #     sound = pyaudio.from_file(abc_file_path)
-        
-    
-    
-
-
-        
-        
-        # try:
-        #     sound = AudioSegment.from_file(abc_file_path)
-        #     speed_change_factor = bpm_value / original_bpm  # Assuming original_bpm is defined elsewhere
-        #     new_sound = sound._spawn(sound.raw_data, overrides={
-        #         "frame_rate": int(sound.frame_rate * speed_change_factor)
-        #     })
-        #     new_sound = new_sound.set_frame_rate(sound.frame_rate)
-        #     out_path = os.path.join(os.path.dirname(abc_file_path), "new_speed_output.wav")
-        #     new_sound.export(out_path, format="wav")
-        #     print(f"The speed has been changed to {bpm_value} BPM. Your new audio has been saved as '{out_path}'.")
-        #     input("Press Enter to continue.")
-        # except Exception as e:
-        #     cls()
-        #     print(f"An error occurred while processing the file: {e}")
-        #     input("Press Enter to continue.")
-        #     return
-
-        
-            
-    
-    
-    # try:
-    #     shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
-    #     sound = AudioSegment.from_file(abc_file_path)
-    #     new_sound_rate = int(sound.frame.rate * (2.0 ** (shift_value / 12.00)))
-    #     new_sound = sound._spawn(sound.raw_data, overrides={'frame rate': new_sound_rate})
-    #     new_sound = new_sound_rate.set_frame_rate(sound.frame.rate)
-    #     new_sound.export("new_pitch_output.abc", format="abc")
-    #     print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as 'new_pitch_output.abc'.")
-    #     input("Press Enter to continue.")
-    # except ValueError:
-    #     cls()
-    #     print("Your input was invalid. Please enter a valid number for semitones.")
-    #     input("Press Enter to continue.")
 def MIDIconv():
     global abc_file_path
     os.system('cls' if os.name=='nt' else 'clear')  
@@ -485,27 +435,7 @@ def convert_to_wav(src: str, dest: str | None = None) -> str | None:
         print(f"Error converting to WAV: {e}")
         return None
 
-# #asks for source filepath
-# #asks for destination filename (press Enter to use same name + .wav)
-# def convert_to_wav():
-#     cls()
-#     src = input("Enter path to the file you want to convert: ").strip()
-#     if not src:
-#         print("Cancelled.")
-#         return
-#     dest = input("Enter destination path of file (press Enter to use same name with .wav): ").strip()
-#     if dest == "":
-#         dest = None
-#     out = convert_to_wav(src, dest)
-#     if out:
-#         print(f"Saved WAV: {out}")
-#     else:
-#         print("Conversion failed.")
-#     input("Press Enter to continue.")
 
-
-    #Convert whatver file is saved to a Wav file and saves in user specified location
-    #If the source is already WAV, a copy with suffix "_copy.wav" is created.
 def save_current_file_as_wav():
     
     global abc_file_path
@@ -579,6 +509,97 @@ if __name__ == "__main__":
               sys.exit()
             case '11':
                 MIDIconv()
+
+
+#Rough work area for testing code snippets and brainstorming ideas
+
+
+# print("Welcome to the waveform generator program! Press enter to continue")
+# userInput = input("Select the number between 1 and for your choice of settings:")
+# cls()
+
+
+
+# print("Welcome to the waveform generator program! Press enter to continue")
+# userInput = input("Select the number between 1 and for your choice of settings:")
+# cls()
+
+
+
+
+
+
+ # try:
+        #     sound = pyaudio.from_file(abc_file_path)
+        
+    
+    
+
+
+        
+        
+        # try:
+        #     sound = AudioSegment.from_file(abc_file_path)
+        #     speed_change_factor = bpm_value / original_bpm  # Assuming original_bpm is defined elsewhere
+        #     new_sound = sound._spawn(sound.raw_data, overrides={
+        #         "frame_rate": int(sound.frame_rate * speed_change_factor)
+        #     })
+        #     new_sound = new_sound.set_frame_rate(sound.frame_rate)
+        #     out_path = os.path.join(os.path.dirname(abc_file_path), "new_speed_output.wav")
+        #     new_sound.export(out_path, format="wav")
+        #     print(f"The speed has been changed to {bpm_value} BPM. Your new audio has been saved as '{out_path}'.")
+        #     input("Press Enter to continue.")
+        # except Exception as e:
+        #     cls()
+        #     print(f"An error occurred while processing the file: {e}")
+        #     input("Press Enter to continue.")
+        #     return
+
+        
+            
+    
+    
+    # try:
+    #     shift_value = int(input("Enter the number of semitones to shift (either positive or negative): "))
+    #     sound = AudioSegment.from_file(abc_file_path)
+    #     new_sound_rate = int(sound.frame.rate * (2.0 ** (shift_value / 12.00)))
+    #     new_sound = sound._spawn(sound.raw_data, overrides={'frame rate': new_sound_rate})
+    #     new_sound = new_sound_rate.set_frame_rate(sound.frame.rate)
+    #     new_sound.export("new_pitch_output.abc", format="abc")
+    #     print(f"The pitch has shifted by {shift_value} semitones. Your new audio has been saved as 'new_pitch_output.abc'.")
+    #     input("Press Enter to continue.")
+    # except ValueError:
+    #     cls()
+    #     print("Your input was invalid. Please enter a valid number for semitones.")
+    #     input("Press Enter to continue.")               
+
+
+
+
+
+
+
+# #asks for source filepath
+# #asks for destination filename (press Enter to use same name + .wav)
+# def convert_to_wav():
+#     cls()
+#     src = input("Enter path to the file you want to convert: ").strip()
+#     if not src:
+#         print("Cancelled.")
+#         return
+#     dest = input("Enter destination path of file (press Enter to use same name with .wav): ").strip()
+#     if dest == "":
+#         dest = None
+#     out = convert_to_wav(src, dest)
+#     if out:
+#         print(f"Saved WAV: {out}")
+#     else:
+#         print("Conversion failed.")
+#     input("Press Enter to continue.")
+
+
+    #Convert whatver file is saved to a Wav file and saves in user specified location
+    #If the source is already WAV, a copy with suffix "_copy.wav" is created.
                     
           
 
